@@ -54,10 +54,14 @@ const getAllPost = asynHandler(async (req, res) => {
 const delatePost = asynHandler(async (req, res) => {
     const { id } = req.params;
     const post = await Post.findById(id);
+    
     if (!post) {
         throw new ApiError(400, "post not found")
     }
-    await Post.findByIdAndUpdate(post._id);
+    if (post.user.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to delete this post");
+    }
+    await Post.findByIdAndDelete(post._id);
 
     return res.status(200).json(
         new ApiResponse(200, "post delate successfully")
